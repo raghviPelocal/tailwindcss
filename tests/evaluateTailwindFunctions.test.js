@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import postcss from 'postcss'
 import plugin from '../src/lib/evaluateTailwindFunctions'
+import createPlugin from '../src/public/create-plugin'
 import { run as runFull, css, html } from './util/run'
 
 function run(input, opts = {}) {
@@ -1233,6 +1234,18 @@ describe('context dependent', () => {
   let config = {
     content: [filePath],
     corePlugins: { preflight: false },
+    plugins: [
+      createPlugin(function ({ matchUtilities }) {
+        matchUtilities(
+          {
+            foo() {
+              return {}
+            },
+          },
+          { type: 'color' }
+        )
+      }),
+    ],
   }
 
   // Rebuild the config file for each test
@@ -1252,7 +1265,7 @@ describe('context dependent', () => {
       filePath,
       html`
         <div class="underline [--box-shadow:theme('boxShadow.doesnotexist')]"></div>
-        <div class="bg-[theme('boxShadow.doesnotexist')]"></div>
+        <div class="foo-[theme('boxShadow.doesnotexist')]"></div>
       `
     )
 
